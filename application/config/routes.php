@@ -54,6 +54,6 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 
-$route['tournament'] = 'tournament';
+$route['tournament'] = 'tournament/index';
 
 
