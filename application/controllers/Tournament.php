@@ -20,6 +20,8 @@ class Tournament extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->view('welcome_message');
+		var_export($this->db->query('select * from users'));
+		die();
+		$this->load->view('show_tournaments');
 	}
 }
