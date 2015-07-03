@@ -28,6 +28,13 @@ class Player_model extends CI_Model
 		return $this->collection($query);
 	}
 
+	public function allNotGoalie()
+	{
+		$sql = 'select * from users where user_type = ? and can_play_goalie = ?';
+		$query = $this->db->query($sql, array('player', 0));
+		return $this->collection($query);
+	}
+
 	public function allCanPlayGoalie()
 	{
 		$sql = 'select * from users where user_type = ? and can_play_goalie = ?';
@@ -47,7 +54,7 @@ class Player_model extends CI_Model
 		$players = array();
 		foreach($query->result_array() as $record)
 		{
-			$player = new Player($record);
+			$player = new Player($record);;
 			$players[] = $player;
 		}
 		return $players;

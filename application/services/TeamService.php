@@ -1,53 +1,95 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
 include_once(APPPATH . 'models/Team.php');
 
-class TeamService{
-
+class TeamService
+{
 	protected $CI;
 	public function __construct(){
 		$this->CI =& get_instance();
 	}
 
-	public function generateTeams($players, $goaliePlayers, $range = array(18,19,20,21,22)){
-		$this->CI->load->model('Team_model', 'team');
+	public function generateTeams($minComposition, $maxComposition){
+		//No negative values or range not expected, return.
+		if(($minComposition <= 0 || $maxComposition <=0) || $maxComposition < $minComposition)
+			return;
+
 		$this->CI->load->model('Player_model', 'player');
 
-		//Get from repository
-		$teams = $this->CI->team->all();
-		$players = $this->CI->player->all();
+		//Get players from repository
+		$players = $this->CI->player->allNotGoalie();
 		$goaliePlayers = $this->CI->player->allCanPlayGoalie();
 
-		//Number of players and Players that can play goalie
+		//Get number of players
 		$nPlayers = count($players);
 		$nGoalies = count($goaliePlayers);
 
-		//Number of teams possible
-		$nTeams = $this->numTeams($nPlayers, $nGoalies);
-
-		$result = $this->balance($players, $nTeams);
-		return $result;
+		//Resolve the number of teams to be created.
+		$nTeams = $this->numTeams($nPlayers, $nGoalies, $minComposition);
+		//If two or more teams are resolved.
+		if(isset($nTeams)){
+			//Distribute the players within teams while making sure the distribution is fair.
+			$distributedTeams = $this->distributePlayers($players, $goaliePlayers, $nTeams, $maxComposition);
+			return $distributedTeams;
+		}
 	}
-	public function balance($players, $nTeams, $maxComposition = 22){
-		//Initializing the teams;
-		shuffle($players);
+	public function distributePlayers($players, $goaliePlayers, $nTeams, $maxComposition){
+		//Initializing the teams
 		$teams = array();
+		//Randomly choose goalie players.
+		shuffle($goaliePlayers);
 		for($i=0; $i<$nTeams; $i++){
-			$player = array_shift($players);
+			$player = array_shift($goaliePlayers);
 			$name = $this->generateName();
 			$team = new Team($name);
+			$team->addPlayer($player);
 			$teams[] = $team;
 		}
-		//Balancing
-		$nPlayers = count($players);
-		while(count($players) > 0 && (count($teams) * $maxComposition) <= ($nTeams * $maxComposition)){
-			usort($teams,function($a,$b) {return ($a->ranking) - ($b->ranking);});
-			$player = array_shift($players);
-			$teams[0]->addPlayer($player);
+		//Insert any remaining goalie player into the players' array
+		foreach($goaliePlayers as $player){
+			$players[] = $player;
 		}
-		return $teams;
+		//Distribution
+		//Get the number of players still available.
+		$nPlayers = count($players);
+		//Array containing the final computed distribution.
+		$completedTeams = array();
+		//Shuffle the remaining players.
+		shuffle($players);
+
+		while(count($players) > 0 && count($teams) > 0 && ($this->getTotalPlayers($teams) <= ($nTeams * $maxComposition))){
+			//While the condition is true, check which team is the one with the lowest ranking number. Add the new player
+			//into that team.
+			usort($teams,function($a,$b) {return ($a->ranking) - ($b->ranking);});
+			//If the team has reached the maximum amount of players allowed by $maxComposition, then remove that team from the
+			//teams composition and add it to the $completeTeams array.
+			if($teams[0]->getNumberOfPlayers() == $maxComposition){
+				$completedTeams[] = array_shift($teams);
+			}
+			else{
+			 	$player = array_shift($players);
+			 	$teams[0]->addPlayer($player);
+			}
+		}
+		//Include those teams with the total number of players within the minComposition and maxComposition number of players.
+		foreach($teams as $team)
+			$completedTeams[] = $team;
+		//This is the final returned composition.
+		return $completedTeams;
+
 	}
-	//Make sure to return even teams.
-	public function numTeams($nPlayers, $nGoalies, $minRange = 18)
+	//Returns the total number of players already distributed.
+	public function getTotalPlayers($teams)
+	{
+		$total = 0;
+		foreach($teams as $team){
+			$total += $team->getNumberOfPlayers();
+		}
+		return $total;
+	}
+
+	//Computes the number of players that will be used in the distribution process.
+	public function numTeams($nPlayers, $nGoalies, $minRange)
 	{
 		if (($nGoalies % 2 == 0) && $nGoalies > 1 && $nPlayers >= $minRange * 2)
 		{
@@ -58,8 +100,8 @@ class TeamService{
 			return $this->numTeams($nPlayers, $nGoalies-1);
 		}
 	}
-
-	function generateName($length = 5)
+	//Generates randomly names.
+	public function generateName($length = 5)
 	{
 		$ch = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 		$chLen = strlen($ch);

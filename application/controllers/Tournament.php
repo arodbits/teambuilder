@@ -21,15 +21,13 @@ class Tournament extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->model('Player_model','player');
 		$teamService = new TeamService();
-
-		$players = $this->player->all();
-		$goaliePlayers = $this->player->allCanPlayGoalie();
-
-		$teams = $teamService->generateTeams($players, $goaliePlayers);
+		//Generates teams dynamically with a composition form 18 to 22 players.
+		$teams = $teamService->generateTeams(18, 22);
 		$data = array();
-		$data['teams'] = $teams;
+		if(isset($teams)){
+			$data['teams'] = $teams;
+		}
 		$this->load->view('show_tournaments', $data);
 	}
 
