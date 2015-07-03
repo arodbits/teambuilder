@@ -21,14 +21,24 @@ class Tournament extends CI_Controller {
 	 */
 	public function index()
 	{
-		$teamService = new TeamService();
-		//Generates teams dynamically with a composition form 18 to 22 players.
-		$teams = $teamService->generateTeams(18, 22);
 		$data = array();
-		if(isset($teams)){
-			$data['teams'] = $teams;
+		if($this->input->post('minRange') && $this->input->post('maxRange')){
+			$teamService = new TeamService();
+			//Generates teams dynamically with a composition form 18 to 22 players.
+			$generator = $teamService->generateTeams($this->input->post('minRange'), $this->input->post('maxRange'));
+			if($generator->fails()){
+				$data['errors'] = $generator->errors();
+			}
+			$data['teams'] = $generator->getGeneratedTeams();
+		}else{
+			$data['errors'] = array('No range was provided. Please <a href="/tournament/create"> go back</a>');
 		}
 		$this->load->view('show_tournaments', $data);
+	}
+
+	public function create()
+	{
+		$this->load->view('create_tournaments');
 	}
 
 }

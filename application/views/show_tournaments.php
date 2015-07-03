@@ -1,4 +1,5 @@
 <?php
+echo '<a href="/tournament/create"> Change range of selection</a>';
 if( !empty($teams) ){
 	echo "<h1>Tournaments</h1>";
 	foreach($teams as $team){
@@ -14,6 +15,16 @@ if( !empty($teams) ){
 		}
 		echo "</ul>";
 		echo "</div>";
+	}
+}
+else{
+	if (isset($errors)){
+		echo "<h1>Error</h1>";
+		echo "<ul>";
+		foreach ($errors as $key => $value) {
+			echo "<li>" . $value . "</li>";
+		}
+		echo "</ul>";
 	}
 }
 ?>

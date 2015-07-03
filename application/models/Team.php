@@ -8,7 +8,7 @@ class Team
 	{
 		$this->name = $name;
 	}
-
+	//Add a new player and update the $numberPlayers which holds the current total number of players already stored on the team.
 	public function addPlayer($player){
 		$this->ranking += $player->ranking;
 		$this->numberPlayers++;

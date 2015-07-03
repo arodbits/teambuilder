@@ -13,7 +13,7 @@ class Player
 		$this->ranking = $player['ranking'];
 		$this->can_play_goalie = $player['can_play_goalie'];
 	}
-	//I'm using magic methods only for convinience at this time. I understand the cons when the no encapsulation is implemented.
+	//I'm using magic methods only for convinience at this time. I understand the cons when the object does not provides encapsulation.
 	public function __get($propertyName)
 	{
 		if (property_exists($this, $propertyName))
