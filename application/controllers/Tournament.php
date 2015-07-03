@@ -25,7 +25,7 @@ class Tournament extends CI_Controller {
 		$teamService = new TeamService();
 
 		$players = $this->player->all();
-		$goaliePlayers = $this->player->getAllCanPlayGoalie();
+		$goaliePlayers = $this->player->allCanPlayGoalie();
 
 		$teams = $teamService->generateTeams($players, $goaliePlayers);
 		$data = array();

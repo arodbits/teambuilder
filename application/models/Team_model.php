@@ -1,19 +1,21 @@
 <?php
-
+// Mocking the team model
 class Team_model extends CI_Model {
 
-	var $players = array();
-	var $name = null;
-	var $ranking = null;
+	//Acting as the database holding.
+	var $teams = array();
 
 	function __construct()
 	{
 		parent::__construct();
 	}
 
-	public function create($players, $name){
-		$this->players = $players;
-		$this->name = $name;
+	public function create(Team $team){
+		$this->teams[] = $team;
+	}
+
+	public function clean(){
+		$this->teams = array();
 	}
 
 	public function ranking($team){
@@ -27,11 +29,11 @@ class Team_model extends CI_Model {
 	}
 
 	public function all(){
-		return $this->players;
+		return $this->teams;
 	}
 
 	public function get($name){
-		return $this->players[$name];
+		return $this->teams[$name];
 	}
 
 }

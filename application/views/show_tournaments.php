@@ -8,7 +8,7 @@ foreach($teams as $team){
 	echo "Number of Players: " . $cn = count($team->players);
 	echo "<hr>";
 	foreach($team->players as $player){
-		$name = $player['first_name'] .' '. $player['last_name'];
+		$name = $player->first_name .' '. $player->last_name;
 		echo "<li> $name</li>";
 	}
 	echo "</ul>";
